@@ -1,59 +1,234 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Valentine 💖</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(#ffe6e6, #ffcccc);
-            text-align: center;
-            margin-top: 100px;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Un petit truc pour Camille 💖</title>
+  <style>
+    body{
+      font-family: Arial, sans-serif;
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      background: linear-gradient(#ffe6e6, #ffcccc);
+      overflow:hidden;
+      padding:24px;
+    }
+    .card{
+      background: rgba(255,255,255,0.88);
+      border-radius:18px;
+      padding:28px 22px;
+      max-width:560px;
+      width:100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      backdrop-filter: blur(6px);
+    }
+    h1{ color:#ff3366; margin:0 0 10px; font-size:clamp(26px, 4vw, 40px); }
+    p{ margin:0 0 18px; font-size:18px; }
 
-        h1 {
-            color: #ff3366;
-            font-size: 40px;
-        }
+    .btns{
+      display:flex;
+      gap:14px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:10px;
+      position:relative;
+      z-index:5;
+    }
+    button{
+      font-size:20px;
+      padding:12px 26px;
+      border:none;
+      border-radius:14px;
+      cursor:pointer;
+      user-select:none;
+      transition: transform .15s ease;
+    }
+    button:active{ transform: scale(0.98); }
 
-        button {
-            font-size: 22px;
-            padding: 12px 30px;
-            margin: 20px;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-        }
+    .yes{ background:#ff4d88; color:#fff; }
+    .no{ background:#d9d9d9; }
 
-        .yes {
-            background-color: #ff4d88;
-            color: white;
-        }
+    .tiny{ font-size:14px; opacity:0.75; margin-top:14px; }
 
-        .no {
-            background-color: #ccc;
-            position: absolute;
-        }
-    </style>
+    /* "No" devient flottant quand on le déplace */
+    .floating{
+      position:fixed;
+      z-index:6;
+    }
+
+    /* Cœurs qui tombent */
+    .heart{
+      position:fixed;
+      top:-10vh;
+      font-size:24px;
+      pointer-events:none;
+      opacity:0.9;
+      animation: fall linear forwards;
+      z-index:1;
+    }
+    @keyframes fall{
+      to{
+        transform: translateY(120vh) rotate(360deg);
+        opacity:0.0;
+      }
+    }
+
+    /* Page résultat */
+    .result img{
+      width: min(380px, 90%);
+      border-radius:16px;
+      box-shadow: 0 8px 22px rgba(0,0,0,0.18);
+      margin: 14px 0;
+    }
+    .result .big{
+      font-size:clamp(20px, 3.3vw, 28px);
+      margin: 8px 0 0;
+      color:#ff3366;
+      font-weight:bold;
+    }
+    .result .sub{
+      font-size:clamp(16px, 2.7vw, 20px);
+      margin:10px 0 0;
+    }
+    .cta{
+      margin-top:18px;
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+    .cta a{
+      display:inline-block;
+      text-decoration:none;
+      background:#ff4d88;
+      color:#fff;
+      padding:10px 18px;
+      border-radius:12px;
+      font-size:16px;
+    }
+    .cta .secondary{
+      background:#444;
+    }
+  </style>
 </head>
 <body>
+  <div class="card" id="card">
+    <h1 id="title">💖 Camille, will be my Valentine ? 💖</h1>
+    <p id="subtitle"> Attention fais le bon choix... </p>
 
-<h1>💖 Camille will you be my Valentine ? 💖</h1>
+    <div class="btns">
+      <button class="yes" id="yesBtn">Yes 💕</button>
+      <button class="no" id="noBtn">No 😢</button>
+    </div>
 
-<button class="yes" onclick="yesClick()">Yes 💕</button>
-<button class="no" onmouseover="moveNo(this)">No 😢</button>
+    <div class="tiny" id="hint">Astuce : “No” est… un peu timide 👀</div>
+  </div>
 
-<script>
-function moveNo(btn) {
-    btn.style.top = Math.random() * 80 + "vh";
-    btn.style.left = Math.random() * 80 + "vw";
-}
+  <script>
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn  = document.getElementById("noBtn");
+    const card   = document.getElementById("card");
+    const hint   = document.getElementById("hint");
 
-function yesClick() {
-    alert("Je le savais ! (meilleur décision de ta vie )");
-}
-</script>
+    let noMoves = 0;
+    let yesScale = 1;
 
+    function growYes() {
+      // Grossit progressivement, mais on limite un peu pour rester joli
+      yesScale = Math.min(yesScale + 0.10, 2.2);
+      yesBtn.style.transform = `scale(${yesScale})`;
+    }
+
+    function moveNo() {
+      noBtn.classList.add("floating");
+
+      const padding = 10;
+      const btnRect = noBtn.getBoundingClientRect();
+      const maxX = window.innerWidth  - btnRect.width  - padding;
+      const maxY = window.innerHeight - btnRect.height - padding;
+
+      const x = Math.max(padding, Math.floor(Math.random() * maxX));
+      const y = Math.max(padding, Math.floor(Math.random() * maxY));
+
+      noBtn.style.left = x + "px";
+      noBtn.style.top  = y + "px";
+
+      noMoves++;
+
+      // Chaque fuite du "No" fait grossir le "Yes"
+      growYes();
+
+      if (noMoves === 3) hint.textContent = "Ok ok… tu peux essayer, mais bon 😅";
+      if (noMoves === 6) hint.textContent = "Tu es déterminée 👀";
+      if (noMoves === 9) hint.textContent = "Le “No” n’a pas envie aujourd’hui 😈";
+    }
+
+    // Sur PC: au survol
+    noBtn.addEventListener("mouseover", moveNo);
+    // Sur mobile: au toucher
+    noBtn.addEventListener("touchstart", (e) => { e.preventDefault(); moveNo(); }, {passive:false});
+
+    // Petit troll si elle clique "No" (si elle y arrive)
+    noBtn.addEventListener("click", () => {
+      // Souvent on le fait fuir encore une fois
+      if (Math.random() < 0.75) { moveNo(); return; }
+      document.body.innerHTML = `
+        <div class="card">
+          <h1 style="color:#ff3366;"> Nice try…</h1>
+          <p style="font-size:20px;">Mais non 😌</p>
+          <p class="tiny">Retour dans 2 secondes…</p>
+        </div>`;
+      setTimeout(() => location.reload(), 2000);
+    });
+
+    // YES -> ouvre une "nouvelle page" (même fichier) + image drôle + texte
+    yesBtn.addEventListener("click", () => {
+      // petite pluie de cœurs
+      const end = Date.now() + 2500;
+      const timer = setInterval(() => {
+        spawnHeart(); spawnHeart();
+        if (Date.now() > end) clearInterval(timer);
+      }, 120);
+
+      // Change l'URL (hash) pour simuler une nouvelle page
+      location.hash = "#yes";
+
+      // Remplace le contenu par la page finale
+      card.classList.add("result");
+      card.innerHTML = `
+        <h1>💘 JE LE SAVAIS ! 💘</h1>
+        <img alt="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHNycWc0NHF0d3lqOHplZGltb293dW96eml4Y2Ywb2txY29tdW9lcyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/HKL07xwvfPiFI0Ti71/giphy.gif">
+        <div class="big">Meilleure décision de ta vie </div>
+        <div class="sub">Camille… c’est toujours OK pour le cinéma de jeudi ? 🍿🎬</div>
+
+        <div class="cta">
+          <a href="https://www.google.com/search?q=Path%C3%A9+Grenoble" target="_blank" rel="noopener">
+            Ouvrir Pathé Grenoble 📍
+          </a>
+          <a class="secondary" href="#" onclick="location.reload(); return false;">
+            Revoir la question 😇
+          </a>
+        </div>
+
+        <p class="tiny">PS : tu peux screenshot 😌</p>
+      `;
+    });
+
+    function spawnHeart(){
+      const heart = document.createElement("div");
+      heart.className = "heart";
+      heart.textContent = Math.random() > 0.5 ? "💖" : "💕";
+      heart.style.left = Math.floor(Math.random() * 100) + "vw";
+      heart.style.animationDuration = (2.2 + Math.random() * 2.4) + "s";
+      heart.style.fontSize = (18 + Math.random() * 22) + "px";
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 6000);
+    }
+  </script>
 </body>
 </html>
 
